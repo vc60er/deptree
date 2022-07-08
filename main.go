@@ -118,13 +118,13 @@ func main() {
 		pkgTree.Add(ss[0], ss[1])
 	}
 
-	fmt.Println("dependence tree:\n")
-
 	root := pkgTree.GetRootPkg()
 	if root == nil {
 		return
 	}
 
+	fmt.Println("package:", root.name)
+	fmt.Println("dependence tree:\n")
 	childLen := len(root.childs)
 	for i, c := range root.childs {
 		head := "├── "
