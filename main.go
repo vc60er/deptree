@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -17,10 +18,11 @@ type Pkg struct {
 type PkgTree struct {
 	mapPkg map[string]*Pkg
 	root   string
+	depth  int
 }
 
-func NewPkgTree() *PkgTree {
-	return &PkgTree{mapPkg: make(map[string]*Pkg)}
+func NewPkgTree(depth int) *PkgTree {
+	return &PkgTree{mapPkg: make(map[string]*Pkg), depth: depth}
 }
 
 func (p *PkgTree) Add(name string, child string) {
@@ -49,7 +51,7 @@ func (p *PkgTree) GetRootPkg() *Pkg {
 }
 
 func (p *PkgTree) printTree(path string, name string) int {
-	if len(path) > (*pDepth+2)*5-1 {
+	if len(path) > (p.depth+2)*5-1 {
 		path = strings.Replace(path, "├", "└", -1)
 		fmt.Printf("%s...\n", path)
 		return -1
@@ -106,7 +108,7 @@ func main() {
 		}
 	}
 	reader := bufio.NewReader(file)
-	pkgTree := NewPkgTree()
+	pkgTree := NewPkgTree(*pDepth)
 
 	for {
 		line, _, err := reader.ReadLine()
@@ -115,6 +117,10 @@ func main() {
 		}
 
 		ss := strings.Split(string(line), " ")
+		if len(ss) != 2 {
+			log.Fatal(errors.New("error input"))
+		}
+
 		pkgTree.Add(ss[0], ss[1])
 	}
 
