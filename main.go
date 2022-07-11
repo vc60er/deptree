@@ -83,9 +83,16 @@ func (p *PkgTree) printTree(path string, name string) int {
 	return 0
 }
 
-var pDepth = flag.Int("d", 3, "depth of dependence")
+var pDepth = flag.Int("d", 3, "max depth of dependence")
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [go-mod-graph-output-file]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "OPTIONS:\n")
+
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	graphFile := ""
