@@ -64,7 +64,7 @@ func (p *PkgTree) printTree(path string, name string) int {
 		childPath = strings.Replace(childPath, "└", " ", -1)
 		childPath = strings.Replace(childPath, "├", "│", -1)
 		childPath = strings.Replace(childPath, "─", " ", -1)
-		childPath = strings.Replace(childPath, "┌", "|", -1)
+		childPath = strings.Replace(childPath, "┌", "│", -1)
 
 		childLen := len(child.childs)
 		for i, name := range child.childs {
