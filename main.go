@@ -51,7 +51,7 @@ func (p *PkgTree) GetRootPkg() *Pkg {
 }
 
 func (p *PkgTree) printTree(path string, name string) int {
-	if len(path) > (p.depth+2)*5-1 {
+	if (len([]rune(string(path)))+1)/5 > p.depth {
 		path = strings.Replace(path, "├", "└", -1)
 		fmt.Printf("%s...\n", path)
 		return -1
