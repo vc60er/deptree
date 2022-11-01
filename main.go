@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -11,18 +12,23 @@ import (
 )
 
 type Pkg struct {
-	name   string
-	childs []string
+	name   string   `json:"package_name"`
+	childs []string `json:"package_childs"`
 }
 
 type PkgTree struct {
-	mapPkg map[string]*Pkg
-	root   string
-	depth  int
+	mapPkg map[string]*Pkg `json:"packages"`
+	root   string          `json:"-"`
+	depth  int             `json:"-"`
 }
 
 func NewPkgTree(depth int) *PkgTree {
 	return &PkgTree{mapPkg: make(map[string]*Pkg), depth: depth}
+}
+
+func (p *PkgTree) ToJSON() (treeJson []byte, err error) {
+	treeJson, err = json.Marshal(p)
+	return
 }
 
 func (p *PkgTree) Add(name string, child string) {
@@ -87,7 +93,7 @@ var pDepth = flag.Int("d", 3, "max depth of dependence")
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [go-mod-graph-output-file]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [output file]\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "OPTIONS:\n")
 
 		flag.PrintDefaults()
@@ -95,25 +101,17 @@ func main() {
 
 	flag.Parse()
 
-	graphFile := ""
+	outputFile := ""
 	if flag.NArg() == 0 {
 	} else if flag.NArg() == 1 {
-		graphFile = flag.Arg(0)
+		outputFile = flag.Arg(0)
 	} else {
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	var err error
-	var file *os.File
-	if len(graphFile) == 0 {
-		file = os.Stdin
-	} else {
-		file, err = os.Open(graphFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	var file = os.Stdin
 	reader := bufio.NewReader(file)
 	pkgTree := NewPkgTree(*pDepth)
 
@@ -136,16 +134,22 @@ func main() {
 		return
 	}
 
-	fmt.Println("package:", root.name)
-	fmt.Println("dependence tree:\n")
-	childLen := len(root.childs)
-	for i, c := range root.childs {
-		head := "├── "
-		if i == 0 {
-			head = "┌── "
-		} else if i == childLen-1 {
-			head = "└── "
-		}
-		pkgTree.printTree(head, c)
+	// Export the JSON format of the tree.
+	jsonTree, err := pkgTree.ToJSON()
+	err = os.WriteFile("dep.json", jsonTree, 0644)
+	if err != nil {
+		panic(err)
 	}
+	//fmt.Println("package:", root.name)
+	//fmt.Println("dependence tree:\n")
+	//childLen := len(root.childs)
+	//for i, c := range root.childs {
+	//	head := "├── "
+	//	if i == 0 {
+	//		head = "┌── "
+	//	} else if i == childLen-1 {
+	//		head = "└── "
+	//	}
+	//	pkgTree.printTree(head, c)
+	//}
 }
