@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,33 +11,28 @@ import (
 )
 
 type Pkg struct {
-	name   string   `json:"package_name"`
-	childs []string `json:"package_childs"`
+	name   string
+	Childs []string `json:"Childs"`
 }
 
 type PkgTree struct {
-	mapPkg map[string]*Pkg `json:"packages"`
-	root   string          `json:"-"`
-	depth  int             `json:"-"`
+	MapPkg map[string]*Pkg `json:"packages"`
+	root   string
+	depth  int
 }
 
 func NewPkgTree(depth int) *PkgTree {
-	return &PkgTree{mapPkg: make(map[string]*Pkg), depth: depth}
-}
-
-func (p *PkgTree) ToJSON() (treeJson []byte, err error) {
-	treeJson, err = json.Marshal(p)
-	return
+	return &PkgTree{MapPkg: make(map[string]*Pkg), depth: depth}
 }
 
 func (p *PkgTree) Add(name string, child string) {
-	pkg, ok := p.mapPkg[name]
+	pkg, ok := p.MapPkg[name]
 	if !ok {
 		pkg = &Pkg{name: name}
-		p.mapPkg[name] = pkg
+		p.MapPkg[name] = pkg
 	}
 
-	pkg.childs = append(pkg.childs, child)
+	pkg.Childs = append(pkg.Childs, child)
 
 	if len(p.root) == 0 {
 		p.root = name
@@ -46,14 +40,14 @@ func (p *PkgTree) Add(name string, child string) {
 }
 
 func (p *PkgTree) GetPkg(name string) *Pkg {
-	return p.mapPkg[name]
+	return p.MapPkg[name]
 }
 
 func (p *PkgTree) GetRootPkg() *Pkg {
 	if len(p.root) == 0 {
 		return nil
 	}
-	return p.mapPkg[p.root]
+	return p.MapPkg[p.root]
 }
 
 func (p *PkgTree) printTree(path string, name string) int {
@@ -64,16 +58,16 @@ func (p *PkgTree) printTree(path string, name string) int {
 	}
 	fmt.Printf("%s%s\n", path, name)
 
-	child, ok := p.mapPkg[name]
-	if ok && len(child.childs) > 0 {
+	child, ok := p.MapPkg[name]
+	if ok && len(child.Childs) > 0 {
 		childPath := path
 		childPath = strings.Replace(childPath, "└", " ", -1)
 		childPath = strings.Replace(childPath, "├", "│", -1)
 		childPath = strings.Replace(childPath, "─", " ", -1)
 		childPath = strings.Replace(childPath, "┌", "│", -1)
 
-		childLen := len(child.childs)
-		for i, name := range child.childs {
+		childLen := len(child.Childs)
+		for i, name := range child.Childs {
 			corner := ""
 			if i == childLen-1 {
 				corner = childPath + " └── "
@@ -90,10 +84,11 @@ func (p *PkgTree) printTree(path string, name string) int {
 }
 
 var pDepth = flag.Int("d", 3, "max depth of dependence")
+var printJSON = flag.Bool("json", false, "print JSON instead of tree")
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [output file]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [go-mod-graph-output-file]\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "OPTIONS:\n")
 
 		flag.PrintDefaults()
@@ -101,17 +96,25 @@ func main() {
 
 	flag.Parse()
 
-	outputFile := ""
+	graphFile := ""
 	if flag.NArg() == 0 {
 	} else if flag.NArg() == 1 {
-		outputFile = flag.Arg(0)
+		graphFile = flag.Arg(0)
 	} else {
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	var err error
-	var file = os.Stdin
+	var file *os.File
+	if len(graphFile) == 0 {
+		file = os.Stdin
+	} else {
+		file, err = os.Open(graphFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	reader := bufio.NewReader(file)
 	pkgTree := NewPkgTree(*pDepth)
 
@@ -134,22 +137,28 @@ func main() {
 		return
 	}
 
-	// Export the JSON format of the tree.
-	jsonTree, err := pkgTree.ToJSON()
-	err = os.WriteFile("dep.json", jsonTree, 0644)
-	if err != nil {
-		panic(err)
+	if *printJSON {
+		// Print dependencies in JSON format
+		jsonTree, err := pkgTree.ToJSON()
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("%s", jsonTree)
+	} else {
+		// Print dependencies in Tree format
+		fmt.Println("package:", root.name)
+		fmt.Println("dependence tree:\n")
+		childLen := len(root.Childs)
+		for i, c := range root.Childs {
+			head := "├── "
+			if i == 0 {
+				head = "┌── "
+			} else if i == childLen-1 {
+				head = "└── "
+			}
+			pkgTree.printTree(head, c)
+		}
 	}
-	//fmt.Println("package:", root.name)
-	//fmt.Println("dependence tree:\n")
-	//childLen := len(root.childs)
-	//for i, c := range root.childs {
-	//	head := "├── "
-	//	if i == 0 {
-	//		head = "┌── "
-	//	} else if i == childLen-1 {
-	//		head = "└── "
-	//	}
-	//	pkgTree.printTree(head, c)
-	//}
+
 }
