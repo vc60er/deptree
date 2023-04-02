@@ -17,10 +17,6 @@ type jsonModule struct {
 }
 
 func (t *tree) printJSON() {
-	if t.rootItem == nil {
-		return
-	}
-
 	jt := jsonTree{}
 	jt.createAndAddModules(t)
 	jsonContent, err := json.MarshalIndent(jt, "", "    ")

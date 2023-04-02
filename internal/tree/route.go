@@ -19,10 +19,6 @@ type routeTree struct {
 
 // Print out the tree as route to the console
 func (t *tree) printRoute() {
-	if t.rootItem == nil {
-		return
-	}
-
 	rt := routeTree{lines: &routeTreeLines{}}
 
 	// evaluate data and apply filters
