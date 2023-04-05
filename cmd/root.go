@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -6,7 +6,7 @@ import (
 	"github.com/vc60er/deptree/internal/tree"
 )
 
-func main() {
+func Execute() {
 	// TODO:
 	// - get all upgradable modules: "go list -u -m -json all" and only those with newer version
 	// - filter list of "go mod graph" (all children with parent) to all upradeable children

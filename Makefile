@@ -3,7 +3,7 @@ all: build
 
 .PHONY: build
 build:
-	go build -o output/deptree -v ./cmd
+	go build -o output/deptree -v deptree.go
 
 .PHONY: clean
 clean:
