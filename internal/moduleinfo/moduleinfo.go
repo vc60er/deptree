@@ -4,16 +4,20 @@ import (
 	"encoding/json"
 	"log"
 	"strings"
+
+	"github.com/vc60er/deptree/internal/verbose"
 )
 
 // Info stores all attributes for retrieve module information
 type Info struct {
+	verbose verbose.Verbose
 	modules map[string]*Module
 }
 
 // NewInfo creates a new instance
-func NewInfo() *Info {
+func NewInfo(verbose verbose.Verbose) *Info {
 	i := Info{
+		verbose: verbose,
 		modules: make(map[string]*Module),
 	}
 	return &i
@@ -34,8 +38,7 @@ func (i *Info) Fill(goListCallJSONContent []byte) {
 	for idx, module := range moduleList {
 		i.modules[module.Name()] = &moduleList[idx]
 	}
-
-	return
+	i.verbose.Log1f("%d modules collected", len(i.modules))
 }
 
 // GetModuleAddIfEmpty returns a module if exist, otherwise add it to the map before return
@@ -54,13 +57,17 @@ func (i *Info) GetModuleAddIfEmpty(name string) *Module {
 
 // Adjust modules after all is parsed
 func (i *Info) Adjust() {
+	var cnt int
 	for _, mod1 := range i.modules {
 		for _, mod2 := range i.modules {
 			if mod1.Path == mod2.Path && mod1.Version != mod2.Version {
+				cnt++
 				mod1.related = append(mod1.related, mod2)
 			}
 		}
 	}
+	i.verbose.Log1f("%d adjustments done", cnt)
+	i.verbose.Log1f("%d modules after adjust", len(i.modules))
 }
 
 // Print the module of the given path for debugging purposes

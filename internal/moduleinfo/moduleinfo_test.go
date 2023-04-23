@@ -8,13 +8,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vc60er/deptree/internal/verbose"
 )
 
 func TestNewInfo(t *testing.T) {
 	// arrange
 	assert := assert.New(t)
+	v := verbose.Verbose{}
 	// act
-	got := NewInfo()
+	got := NewInfo(v)
 	// assert
 	assert.NotNil(got.modules)
 }

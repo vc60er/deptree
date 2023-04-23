@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/vc60er/deptree/internal/moduleinfo"
+	"github.com/vc60er/deptree/internal/verbose"
 )
 
 const maxDepth = 20
@@ -18,7 +19,9 @@ type treeItem struct {
 }
 
 type tree struct {
+	verbose          verbose.Verbose
 	depth            int
+	showDroppedChild bool
 	visualizeTrimmed bool
 	showAll          bool
 	colored          bool
@@ -28,7 +31,8 @@ type tree struct {
 }
 
 // NewTree creates a new instance for tree visualization
-func NewTree(depth int, visualizeTrimmed, showAll, colored bool, modInfo moduleinfo.Info) *tree {
+func NewTree(verbose verbose.Verbose, depth int,
+	showDroppedChild, visualizeTrimmed, showAll, colored bool, modInfo moduleinfo.Info) *tree {
 	if depth > maxDepth {
 		depth = maxDepth
 	}
@@ -36,7 +40,9 @@ func NewTree(depth int, visualizeTrimmed, showAll, colored bool, modInfo modulei
 		depth = 1
 	}
 	t := tree{
+		verbose:          verbose,
 		depth:            depth,
+		showDroppedChild: showDroppedChild,
 		visualizeTrimmed: visualizeTrimmed,
 		showAll:          showAll,
 		colored:          colored,
@@ -61,6 +67,7 @@ func (t *tree) Fill(file io.Reader) {
 
 		t.addItem(ss[0], ss[1])
 	}
+	t.verbose.Log1f("%d graph items collected", len(t.items))
 }
 
 // Print prints the collected information to command line (STDOUT) in the given format.
@@ -81,7 +88,9 @@ func (t *tree) Print(asJSON bool) {
 func (t *tree) addItem(name string, childName string) *treeItem {
 	item, ok := t.items[name]
 	if !ok {
-		item = &treeItem{module: t.modInfo.GetModuleAddIfEmpty(name)}
+		item = &treeItem{
+			module: t.modInfo.GetModuleAddIfEmpty(name),
+		}
 		t.items[name] = item
 	}
 

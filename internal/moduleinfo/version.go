@@ -7,7 +7,6 @@ import (
 )
 
 type version struct {
-	vStr     string
 	major    int
 	minor    int
 	patch    int

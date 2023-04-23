@@ -243,3 +243,17 @@ cd into the package root folder (contains go.mod) and run:
 Relative paths can be used also.
 
 `deptree -graph=data/graphfile.txt -upgrade=data/upgradefile.txt`
+
+## Duplicate occurrence of children
+
+More than one occurrence of an item at different levels of the tree is possible. This occurs very likely for projects
+with many dependencies (count of imports in go.mod file). `deptree` handles this in the following way to avoid duplicate
+information, waste of processing time and possibly circular dependencies:
+
+* first occurrence of the child will be processed and shown with all sub-children
+* already processed children will be filtered by default
+* the parameter "-a" will show a link to the first processed item (do not filter the line completely)
+* the parameter "-f" forces to process and show each child with all sub-children (stopped at the given depth level)
+
+> The option "-f" can lead to hang due to circular dependencies or great amount of work. If this setting is really
+> needed and you note a very long delay, try to set the depth parameter "-d" as minimal as possible.

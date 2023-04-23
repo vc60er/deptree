@@ -5,33 +5,72 @@ import (
 	"strings"
 
 	"github.com/vc60er/deptree/internal/moduleinfo"
+	"github.com/vc60er/deptree/internal/verbose"
 )
 
-func ExamplePrint_alltrimmed() {
-	i := moduleinfo.NewInfo()
-	t := NewTree(2, true, true, false, *i)
+func ExamplePrint_allTrimmed() {
+	const (
+		showDroppedChild = false
+		visualizeTrimmed = true
+		showAll          = true
+		colored          = false
+	)
+	v := verbose.Verbose{}
+	i := moduleinfo.NewInfo(v)
+	t := NewTree(v, 2, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
 	t.Fill(graphStringReader())
 	t.Print(false)
 	// Output:
 	// dependency tree with depth 2 for package: github.com/vc60er/deptree, least 2 trimmed item(s)
+	// * tree of duplicate children not drawn (-f not set)
 	//
 	// github.com/vc60er/deptree
 	//  └── github.com/stretchr/testify@v1.8.2
 	//       ├── github.com/davecgh/go-spew@v1.1.1
 	//       ├── github.com/pmezard/go-difflib@v1.0.0
 	//       ├── github.com/stretchr/objx@v0.5.0
-	//       │    └── ...
+	//       │    └── 1 more ...
 	//       └── gopkg.in/yaml.v3@v3.0.1
-	//            └── ...
+	//            └── 1 more ...
 }
 
-func ExamplePrint_all() {
-	i := moduleinfo.NewInfo()
-	t := NewTree(2, false, true, false, *i)
+func ExamplePrint_allTrimmedSomeMore() {
+	const (
+		showDroppedChild = false
+		visualizeTrimmed = true
+		showAll          = true
+		colored          = false
+	)
+	v := verbose.Verbose{}
+	i := moduleinfo.NewInfo(v)
+	t := NewTree(v, 1, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
 	t.Fill(graphStringReader())
 	t.Print(false)
 	// Output:
-	// dependency tree with depth 2 for package: github.com/vc60er/deptree (no visualization for trimmed tree)
+	// dependency tree with depth 1 for package: github.com/vc60er/deptree, least 4 trimmed item(s)
+	// * tree of duplicate children not drawn (-f not set)
+	//
+	// github.com/vc60er/deptree
+	//  └── github.com/stretchr/testify@v1.8.2
+	//       └── 4 more ...
+}
+
+func ExamplePrint_all() {
+	const (
+		showDroppedChild = false
+		visualizeTrimmed = false
+		showAll          = true
+		colored          = false
+	)
+	v := verbose.Verbose{}
+	i := moduleinfo.NewInfo(v)
+	t := NewTree(v, 2, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
+	t.Fill(graphStringReader())
+	t.Print(false)
+	// Output:
+	// dependency tree with depth 2 for package: github.com/vc60er/deptree
+	// * no visualization for trimmed tree (-t not set)
+	// * tree of duplicate children not drawn (-f not set)
 	//
 	// github.com/vc60er/deptree
 	//  └── github.com/stretchr/testify@v1.8.2
@@ -42,17 +81,27 @@ func ExamplePrint_all() {
 }
 
 func ExamplePrint() {
-	i := moduleinfo.NewInfo()
+	const (
+		showDroppedChild = false
+		visualizeTrimmed = false
+		showAll          = false
+		colored          = false
+	)
+	v := verbose.Verbose{}
+	i := moduleinfo.NewInfo(v)
 	i.Fill(upgradeContent())
 
-	t := NewTree(3, false, false, false, *i)
+	t := NewTree(v, 3, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
 	t.Fill(graphStringReader())
 
 	i.Adjust()
 
 	t.Print(false)
 	// Output:
-	// dependency tree with depth 3 for package: github.com/vc60er/deptree, least 2 trimmed item(s) (no visualization for trimmed tree, only upgradable items with parents)
+	// dependency tree with depth 3 for package: github.com/vc60er/deptree, least 2 trimmed item(s)
+	// * no visualization for trimmed tree (-t not set)
+	// * only upgradable items with parents are shown (-a not set)
+	// * duplicate children not shown (-a not set)
 	//
 	// github.com/vc60er/deptree (go1.15)
 	//  └── github.com/stretchr/testify@v1.8.2 (go1.13)
