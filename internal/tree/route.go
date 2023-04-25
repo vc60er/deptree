@@ -32,14 +32,22 @@ type routeTreeLine struct {
 type routeTreeLines []*routeTreeLine
 
 type routeTree struct {
-	lines *routeTreeLines
+	maxDepth int
+	lines    *routeTreeLines
 }
 
 var colorDefinition = map[string]string{upgradeMarker: colorYellow}
 
 // printRoute prints out the tree as route to the console
 func (t *tree) printRoute() {
-	rt := routeTree{lines: &routeTreeLines{}}
+	rt := routeTree{
+		maxDepth: t.depth,
+		lines:    &routeTreeLines{},
+	}
+	if t.visualizeTrimmed {
+		// to prepare the route for "..." lines, we need one level more
+		rt.maxDepth++
+	}
 
 	// evaluate data and apply filters
 	rt.processItem("", *t.rootItem, nil)
@@ -87,7 +95,7 @@ func (t *tree) printRoute() {
 
 // processItem add lines with route sign etc. starting at the given item
 func (rt *routeTree) processItem(route string, item treeItem, parentLine *routeTreeLine) int {
-	if (len([]rune(string(route)))+1)/5 > maxDepth {
+	if (len([]rune(string(route)))+1)/5 > rt.maxDepth {
 		return -1
 	}
 	line := rt.createAndAddLine(route, item, parentLine)

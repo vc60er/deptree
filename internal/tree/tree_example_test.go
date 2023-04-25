@@ -31,7 +31,7 @@ func ExamplePrint_all() {
 	t.Fill(graphStringReader())
 	t.Print(false)
 	// Output:
-	// dependency tree with depth 2 for package: github.com/vc60er/deptree, least 2 trimmed item(s) (no visualization for trimmed tree)
+	// dependency tree with depth 2 for package: github.com/vc60er/deptree (no visualization for trimmed tree)
 	//
 	// github.com/vc60er/deptree
 	//  └── github.com/stretchr/testify@v1.8.2
