@@ -90,8 +90,23 @@ func (t *tree) addItem(name string, childName string) *treeItem {
 	}
 
 	if len(childName) > 0 {
+		if name == childName {
+			log.Fatalf("circular dependency for %s", name)
+		}
+		if contains(item.children, childName) {
+			log.Fatalf("try to add duplicate children %s", childName)
+		}
 		item.children = append(item.children, t.addItem(childName, ""))
 	}
 
 	return item
+}
+
+func contains(items []*treeItem, searchName string) bool {
+	for _, item := range items {
+		if item.module.Name() == searchName {
+			return true
+		}
+	}
+	return false
 }
