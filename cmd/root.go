@@ -82,8 +82,9 @@ func getUpgradeContent(upgradeFile string, verbose verbose.Verbose) []byte {
 }
 
 // getGraphFile gets the file handle to access content from STDIN or graph file
-func getGraphFile(graphFile string, verbose verbose.Verbose) (file *os.File) {
+func getGraphFile(graphFile string, verbose verbose.Verbose) *os.File {
 	var err error
+	var file *os.File
 	if len(graphFile) == 0 {
 		file = os.Stdin
 	} else {
@@ -97,5 +98,5 @@ func getGraphFile(graphFile string, verbose verbose.Verbose) (file *os.File) {
 		}
 	}
 	verbose.Log1f("graph content retrieved")
-	return
+	return file
 }

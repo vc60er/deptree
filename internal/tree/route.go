@@ -65,26 +65,30 @@ func (t *tree) printRoute() {
 	rt.processItem(*t.rootItem, nil)
 	t.verbose.Log1f("%d tree items processed", len(*rt.lines))
 	t.verbose.Log1f("item with most children %s (%d)", rt.mostChildren.module.Name(), len(rt.mostChildren.children))
+
 	filtered := rt.lines.applyDepthFilter(t.depth, t.visualizeTrimmed)
 	if filtered > 0 {
 		rt.lines = rt.lines.cleanInvisible()
 	}
+
 	if !t.showAll {
 		f := rt.lines.applyUpgradableFilter(t.visualizeTrimmed)
 		if f > 0 {
 			rt.lines = rt.lines.cleanInvisible()
-			filtered = filtered + f
+			filtered += f
 		}
 	}
+
 	var duplicateChildTrees int
 	if !t.showDroppedChild {
 		f, l := rt.lines.applyAlreadyProcessedFilter(t.showAll)
 		duplicateChildTrees = l
 		if f > 0 {
 			rt.lines = rt.lines.cleanInvisible()
-			filtered = filtered + f
+			filtered += f
 		}
 	}
+
 	if t.colored {
 		rt.lines.applyColors()
 	}
@@ -217,8 +221,9 @@ func (ls *routeTreeLines) add(level int, name, additionalContent string, parentL
 }
 
 // applyDepthFilter mark lines to show on later print to console according to given depth
-func (ls *routeTreeLines) applyDepthFilter(printDepth int, visualizeTrimmed bool) (countFiltered int) {
+func (ls *routeTreeLines) applyDepthFilter(printDepth int, visualizeTrimmed bool) int {
 	var skipNext bool
+	var countFiltered int
 	for _, l := range *ls {
 		if l.level > printDepth {
 			countFiltered++
@@ -240,12 +245,13 @@ func (ls *routeTreeLines) applyDepthFilter(printDepth int, visualizeTrimmed bool
 			skipNext = false
 		}
 	}
-	return
+	return countFiltered
 }
 
 // applyUpgradableFilter set lines without upgrade information to invisible
-func (ls *routeTreeLines) applyUpgradableFilter(visualizeTrimmed bool) (countFiltered int) {
-	checkNextForDots := false
+func (ls *routeTreeLines) applyUpgradableFilter(visualizeTrimmed bool) int {
+	var checkNextForDots bool
+	var countFiltered int
 	for _, l := range *ls {
 		// not viewables keep untouched
 		if !l.view {
@@ -282,13 +288,15 @@ func (ls *routeTreeLines) applyUpgradableFilter(visualizeTrimmed bool) (countFil
 			p = p.parent
 		}
 	}
-	return
+	return countFiltered
 }
 
 // applyAlreadyProcessedFilter set lines which points to already processed children to invisible, except showAll is set,
 // for showAll=true already processed children will be linked to the first occurrence with lowest level, which means:
 // * this child get a link and its tree will be print completely
 // * further occurrences of child tree will be linked to the first (with note the parent branch, to find quickly)
+//
+//nolint:nonamedreturns // OK here for better differentiation of both int returns
 func (ls *routeTreeLines) applyAlreadyProcessedFilter(showAll bool) (countFiltered int, createdLinks int) {
 	// if not showAll, set all occurrences to invisible, except the highest and return
 	if !showAll {
@@ -438,9 +446,9 @@ func createRoutes(line *routeTreeLine, route string) {
 	childLen := len(line.children)
 	if childLen > 0 {
 		childPath := route
-		childPath = strings.Replace(childPath, "└", " ", -1)
-		childPath = strings.Replace(childPath, "├", "│", -1)
-		childPath = strings.Replace(childPath, "─", " ", -1)
+		childPath = strings.ReplaceAll(childPath, "└", " ")
+		childPath = strings.ReplaceAll(childPath, "├", "│")
+		childPath = strings.ReplaceAll(childPath, "─", " ")
 		for i, child := range line.children {
 			var corner string
 			if i == childLen-1 {

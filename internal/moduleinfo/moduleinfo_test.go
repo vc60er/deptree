@@ -95,13 +95,14 @@ func TestAdjust(t *testing.T) {
 	assert.Equal(0, len(testModule3.related))
 }
 
-func getContent(upgradeFile string) (goListCallJSONContent []byte) {
+func getContent(upgradeFile string) []byte {
 	var err error
 	if upgradeFile, err = filepath.Abs(upgradeFile); err != nil {
 		log.Fatal(err)
 	}
+	var goListCallJSONContent []byte
 	if goListCallJSONContent, err = ioutil.ReadFile(upgradeFile); err != nil {
 		log.Fatal(err)
 	}
-	return
+	return goListCallJSONContent
 }

@@ -122,7 +122,6 @@ func upgradeContent() []byte {
 		`{"Path": "gopkg.in/yaml.v3","Version": "v3.0.1"}`,
 	}
 	return []byte(strings.Join(jsonContent, "\n"))
-
 }
 
 func graphStringReader() io.Reader {

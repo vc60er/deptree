@@ -2,7 +2,6 @@ package tree
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"log"
 	"strings"
@@ -61,8 +60,9 @@ func (t *tree) Fill(file io.Reader) {
 		}
 
 		ss := strings.Split(string(line), " ")
-		if len(ss) != 2 {
-			log.Fatal(errors.New("error input"))
+		const lineParts = 2
+		if len(ss) != lineParts {
+			log.Fatal("error input")
 		}
 
 		t.addItem(ss[0], ss[1])

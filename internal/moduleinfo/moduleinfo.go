@@ -25,7 +25,7 @@ func NewInfo(verbose verbose.Verbose) *Info {
 
 // Fill adds given content to the modules map.
 func (i *Info) Fill(goListCallJSONContent []byte) {
-	// add missing paranthesis
+	// add missing parenthesis
 	goListCallJSONContent = append(append([]byte{'['}, goListCallJSONContent...), ']')
 	// fix missing commas
 	goListCallJSONContent = []byte(strings.ReplaceAll(string(goListCallJSONContent), "}\n{", "},{"))
@@ -48,7 +48,8 @@ func (i *Info) GetModuleAddIfEmpty(name string) *Module {
 	}
 	splitName := strings.Split(name, "@")
 	m := Module{Path: splitName[0]}
-	if len(splitName) == 2 {
+	const lenWithVersion = 2
+	if len(splitName) == lenWithVersion {
 		m.Version = splitName[1]
 	}
 	i.modules[name] = &m

@@ -7,6 +7,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_add(t *testing.T) {
+	// arrange
+	assert := assert.New(t)
+	invisible := routeTreeLine{name: "invisible"}
+	visible := routeTreeLine{name: "visible", view: true}
+	ls := &routeTreeLines{&invisible, &visible}
+	// act
+	ls.add(5, "to add", "extra content", &visible)
+	// assert
+	assert.Equal(3, len(*ls))
+	newLine := (*ls)[2]
+	assert.Equal("", newLine.color)
+	assert.Equal("", newLine.route)
+	assert.Equal(5, newLine.level)
+	assert.Equal("", newLine.link)
+	assert.Equal("to add", newLine.name)
+	assert.Equal("extra content", newLine.additionalContent)
+	assert.True(newLine.view)
+	assert.Equal(visible, *newLine.parent)
+	assert.Equal(newLine, visible.children[0])
+}
+
 func Test_applyDepthFilter(t *testing.T) {
 	n := []string{
 		"parent",
@@ -237,7 +259,8 @@ func Test_applyColors(t *testing.T) {
 	visible := routeTreeLine{name: "visible", view: true}
 	upgrade := routeTreeLine{name: "upgrade", additionalContent: " [v1.2.3]", view: true}
 	linked := routeTreeLine{name: "linked", additionalContent: "see <3>", view: true}
-	ls := &routeTreeLines{&invisible, &visible, &upgrade, &linked}
+	link := routeTreeLine{link: "<3>", name: "the link", view: true}
+	ls := &routeTreeLines{&invisible, &visible, &upgrade, &linked, &link}
 	// act
 	ls.applyColors()
 	// assert
@@ -245,6 +268,8 @@ func Test_applyColors(t *testing.T) {
 	assert.Equal("", visible.color)
 	assert.Equal(colorYellow, upgrade.color)
 	assert.Equal(colorCyan, linked.color)
+	assert.Equal("", link.color)
+	assert.Contains(link.link, colorCyan)
 }
 
 func Test_cleanInvisible(t *testing.T) {
