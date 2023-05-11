@@ -100,7 +100,7 @@ func (t *tree) printRoute() {
 		createRoutes(firstLine, "")
 	}
 
-	cReset := ""
+	var cReset string
 	if t.colored {
 		cReset = colorReset
 	}

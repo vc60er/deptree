@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 )
 
 // note: try to avoid the word "package" at Go level for variables etc.
@@ -20,6 +21,9 @@ type jsonModule struct {
 func (t *tree) printJSON() {
 	jt := jsonTree{}
 	jt.createAndAddModules(t)
+	sort.Slice(jt.Modules, func(i, j int) bool {
+		return jt.Modules[i].Name < jt.Modules[j].Name
+	})
 	jsonContent, err := json.MarshalIndent(jt, "", "    ")
 	if err != nil {
 		log.Fatal(err)
