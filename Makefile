@@ -3,7 +3,7 @@ all: build
 
 .PHONY: build
 build:
-	go build -o output/deptree -v deptree.go
+	go build -v -o output/deptree
 
 .PHONY: test
 test:
@@ -16,7 +16,8 @@ test_example:
 # Test, generate and show coverage in browser
 .PHONY: test_cover
 test_cover:
-	go test -v -run Test ./... -coverprofile=output/coverage.txt ; \
+	mkdir -p output ; \
+	go test -count=1 -v -run Test ./... -coverprofile=output/coverage.txt ; \
 	go tool cover -html=output/coverage.txt ; \
 
 .PHONY: clean
