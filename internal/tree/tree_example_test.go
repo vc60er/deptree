@@ -21,7 +21,7 @@ func ExamplePrint_allTrimmed() {
 	t.Fill(graphStringReader())
 	t.Print(false)
 	// Output:
-	// dependency tree with depth 2 for package: github.com/vc60er/deptree, least 2 trimmed item(s)
+	// dependency tree with depth 2 for package: github.com/vc60er/deptree, least 3 trimmed item(s)
 	// * tree of duplicate children not drawn (-f not set)
 	//
 	// github.com/vc60er/deptree
@@ -31,10 +31,10 @@ func ExamplePrint_allTrimmed() {
 	//       ├── github.com/stretchr/objx@v0.5.0
 	//       │    └── 1 more ...
 	//       └── gopkg.in/yaml.v3@v3.0.1
-	//            └── 1 more ...
+	//            └── 2 more ...
 }
 
-func ExamplePrint_allTrimmedSomeMore() {
+func ExamplePrint_withLinks() {
 	const (
 		showDroppedChild = false
 		visualizeTrimmed = true
@@ -43,16 +43,23 @@ func ExamplePrint_allTrimmedSomeMore() {
 	)
 	v := verbose.Verbose{}
 	i := moduleinfo.NewInfo(v)
-	t := NewTree(v, 1, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
+	t := NewTree(v, 3, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
 	t.Fill(graphStringReader())
 	t.Print(false)
 	// Output:
-	// dependency tree with depth 1 for package: github.com/vc60er/deptree, least 4 trimmed item(s)
+	// dependency tree with depth 3 for package: github.com/vc60er/deptree
 	// * tree of duplicate children not drawn (-f not set)
+	// * 1 duplicate child trees replaced by links
 	//
 	// github.com/vc60er/deptree
-	//  └── github.com/stretchr/testify@v1.8.2
-	//       └── 4 more ...
+	//  └── <1> github.com/stretchr/testify@v1.8.2
+	//       ├── github.com/davecgh/go-spew@v1.1.1
+	//       ├── github.com/pmezard/go-difflib@v1.0.0
+	//       ├── github.com/stretchr/objx@v0.5.0
+	//       │    └── github.com/stretchr/testify@v1.8.0
+	//       └── gopkg.in/yaml.v3@v3.0.1
+	//            ├── gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405
+	//            └── github.com/stretchr/testify@v1.8.2, see <1> for 4 children (branch 'github.com/vc60er/deptree' level 1)
 }
 
 func ExamplePrint_all() {
@@ -98,7 +105,7 @@ func ExamplePrint() {
 
 	t.Print(false)
 	// Output:
-	// dependency tree with depth 3 for package: github.com/vc60er/deptree, least 2 trimmed item(s)
+	// dependency tree with depth 3 for package: github.com/vc60er/deptree, least 3 trimmed item(s)
 	// * no visualization for trimmed tree (-t not set)
 	// * only upgradable items with parents are shown (-a not set)
 	// * duplicate children not shown (-a not set)
@@ -109,6 +116,58 @@ func ExamplePrint() {
 	//       │    └── github.com/stretchr/testify@v1.8.0 => [v1.8.2] (go1.13)
 	//       └── gopkg.in/yaml.v3@v3.0.1
 	//            └── gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405 => [v1.0.0-20201130134442-10cb98267c6c]
+}
+
+func ExamplePrint_json() {
+	const (
+		showDroppedChild = false
+		visualizeTrimmed = false
+		showAll          = false
+		colored          = false
+	)
+	v := verbose.Verbose{}
+	i := moduleinfo.NewInfo(v)
+	i.Fill(upgradeContent())
+
+	t := NewTree(v, 1, showDroppedChild, visualizeTrimmed, showAll, colored, *i)
+	t.Fill(graphStringReader())
+
+	i.Adjust()
+
+	t.Print(true)
+	// Output:
+	// {
+	//     "packages": [
+	//         {
+	//             "name": "github.com/stretchr/objx@v0.5.0",
+	//             "children": [
+	//                 "github.com/stretchr/testify@v1.8.0"
+	//             ]
+	//         },
+	//         {
+	//             "name": "github.com/stretchr/testify@v1.8.2",
+	//             "children": [
+	//                 "github.com/davecgh/go-spew@v1.1.1",
+	//                 "github.com/pmezard/go-difflib@v1.0.0",
+	//                 "github.com/stretchr/objx@v0.5.0",
+	//                 "gopkg.in/yaml.v3@v3.0.1"
+	//             ]
+	//         },
+	//         {
+	//             "name": "github.com/vc60er/deptree",
+	//             "children": [
+	//                 "github.com/stretchr/testify@v1.8.2"
+	//             ]
+	//         },
+	//         {
+	//             "name": "gopkg.in/yaml.v3@v3.0.1",
+	//             "children": [
+	//                 "gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405",
+	//                 "github.com/stretchr/testify@v1.8.2"
+	//             ]
+	//         }
+	//     ]
+	// }
 }
 
 func upgradeContent() []byte {
@@ -133,6 +192,7 @@ func graphStringReader() io.Reader {
 		"github.com/stretchr/testify@v1.8.2 gopkg.in/yaml.v3@v3.0.1",
 		"github.com/stretchr/objx@v0.5.0 github.com/stretchr/testify@v1.8.0",
 		"gopkg.in/yaml.v3@v3.0.1 gopkg.in/check.v1@v0.0.0-20161208181325-20d25e280405",
+		"gopkg.in/yaml.v3@v3.0.1 github.com/stretchr/testify@v1.8.2",
 	}
 	return strings.NewReader(strings.Join(content, "\n"))
 }
