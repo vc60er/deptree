@@ -5,7 +5,7 @@ show golang dependence like tree
 ## How to get it
 
 ```shell
-➜ go install github.com/vc60er/deptree@latest
+➜ go install github.com/vc60er/deptree@master
 ➜ export PATH=$PATH:$GOPATH/bin
 ```
 
