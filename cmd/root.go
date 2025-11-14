@@ -59,7 +59,7 @@ func getUpgradeContent(upgradeFile string, verbose verbose.Verbose) []byte {
 	if len(upgradeFile) == 0 {
 		fmt.Println("call 'go list -u -m -json all', be patient...")
 		var outbuf, errbuf bytes.Buffer
-		cmd := exec.Command("go", "list", "-u", "-m", "-json", "all")
+		cmd := exec.Command("go", "list", "-mod=readonly", "-u", "-m", "-json", "all")
 		cmd.Stdout = &outbuf
 		cmd.Stderr = &errbuf
 		if err := cmd.Run(); err != nil {
